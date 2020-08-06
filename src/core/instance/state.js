@@ -34,7 +34,7 @@ const sharedPropertyDefinition = {
   get: noop,
   set: noop
 }
-
+// 通过defineProperty把target的get和set方法代理到sourceKey上
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -214,11 +214,14 @@ export function defineComputed (
 ) {
   const shouldCache = !isServerRendering()
   if (typeof userDef === 'function') {
+    // conputed方法计算
     sharedPropertyDefinition.get = shouldCache
+    // 根据是否有缓存进行创建get操作/执行操作
       ? createComputedGetter(key)
       : createGetterInvoker(userDef)
     sharedPropertyDefinition.set = noop
   } else {
+    // computed中有set，get监听
     sharedPropertyDefinition.get = userDef.get
       ? shouldCache && userDef.cache !== false
         ? createComputedGetter(key)
@@ -237,9 +240,10 @@ export function defineComputed (
   }
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
-
+// 创建computed中属性对应的getter方法
 function createComputedGetter (key) {
   return function computedGetter () {
+    // 拿到watcher
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
       if (watcher.dirty) {

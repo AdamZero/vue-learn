@@ -38,7 +38,7 @@ function createOnceHandler (event, fn) {
     }
   }
 }
-
+// 更新组件监听
 export function updateComponentListeners (
   vm: Component,
   listeners: Object,

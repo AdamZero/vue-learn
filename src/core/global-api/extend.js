@@ -15,9 +15,11 @@ export function initExtend (Vue: GlobalAPI) {
 
   /**
    * Class inheritance
+   * 通过寄生继承初始化子组件
    */
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
+    // 执行环境是父组件
     const Super = this
     const SuperId = Super.cid
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
@@ -26,16 +28,20 @@ export function initExtend (Vue: GlobalAPI) {
     }
 
     const name = extendOptions.name || Super.options.name
+    // 生产模式下校验组件名
     if (process.env.NODE_ENV !== 'production' && name) {
       validateComponentName(name)
     }
 
     const Sub = function VueComponent (options) {
+      // 原型链中的初始化方法
       this._init(options)
     }
+    // 寄生继承
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
+    // 合并配置
     Sub.options = mergeOptions(
       Super.options,
       extendOptions
@@ -45,9 +51,11 @@ export function initExtend (Vue: GlobalAPI) {
     // For props and computed properties, we define the proxy getters on
     // the Vue instances at extension time, on the extended prototype. This
     // avoids Object.defineProperty calls for each instance created.
+    // 处理props
     if (Sub.options.props) {
       initProps(Sub)
     }
+    // 处理computed
     if (Sub.options.computed) {
       initComputed(Sub)
     }
@@ -57,12 +65,11 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.mixin = Super.mixin
     Sub.use = Super.use
 
-    // create asset registers, so extended classes
-    // can have their private assets too.
+    // 取父类的derictive,filter,component属性
     ASSET_TYPES.forEach(function (type) {
       Sub[type] = Super[type]
     })
-    // enable recursive self-lookup
+    // 组件树中添加当前组件
     if (name) {
       Sub.options.components[name] = Sub
     }
@@ -70,11 +77,14 @@ export function initExtend (Vue: GlobalAPI) {
     // keep a reference to the super options at extension time.
     // later at instantiation we can check if Super's options have
     // been updated.
+
+    // 保存父配置，继承配置和合并后的配置以便进行比价,查看父配置是否更新
     Sub.superOptions = Super.options
     Sub.extendOptions = extendOptions
-    Sub.sealedOptions = extend({}, Sub.options)
+    Sub.sealedOptions = extend({}, Sub.options) // 标记当前配置
 
     // cache constructor
+    // 继承属性中的_CTor保存了对子组件的引用
     cachedCtors[SuperId] = Sub
     return Sub
   }

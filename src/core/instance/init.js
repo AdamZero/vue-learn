@@ -13,7 +13,9 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
+  // 定义_init方法，实例化时调用
   Vue.prototype._init = function (options?: Object) {
+    // 这里的this是vue实例
     const vm: Component = this
     // a uid
     vm._uid = uid++
@@ -29,12 +31,14 @@ export function initMixin (Vue: Class<Component>) {
     // a flag to avoid this being observed
     vm._isVue = true
     // merge options
+    // 有options且是组件时，初始化组件设置
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      // 否则直接合并配置
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -49,8 +53,8 @@ export function initMixin (Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm
-    initLifecycle(vm)
-    initEvents(vm)
+    initLifecycle(vm) // 说是初始化生命周期，其实是初始化了一些内部变量
+    initEvents(vm) // 
     initRender(vm)
     callHook(vm, 'beforeCreate')
     initInjections(vm) // resolve injections before data/props
@@ -70,14 +74,16 @@ export function initMixin (Vue: Class<Component>) {
     }
   }
 }
-
+// 初始化内部组件
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
+  // 通过实例拿到构造函数并取配置
   const opts = vm.$options = Object.create(vm.constructor.options)
   // doing this because it's faster than dynamic enumeration.
   const parentVnode = options._parentVnode
+  // 设置父节点及父节点的虚拟dom对象
   opts.parent = options.parent
   opts._parentVnode = parentVnode
-
+  // 父节点虚拟dom中的配置
   const vnodeComponentOptions = parentVnode.componentOptions
   opts.propsData = vnodeComponentOptions.propsData
   opts._parentListeners = vnodeComponentOptions.listeners
@@ -89,15 +95,21 @@ export function initInternalComponent (vm: Component, options: InternalComponent
     opts.staticRenderFns = options.staticRenderFns
   }
 }
-
+// 处理构造函数中的配置
 export function resolveConstructorOptions (Ctor: Class<Component>) {
+  // 构造函数的配置
   let options = Ctor.options
+  // 构造函数有父类
   if (Ctor.super) {
+    // 递归配置
     const superOptions = resolveConstructorOptions(Ctor.super)
+    // 构造函数中存的父配置
     const cachedSuperOptions = Ctor.superOptions
+    // 父配置有改变
     if (superOptions !== cachedSuperOptions) {
       // super option changed,
       // need to resolve new options.
+      // 重置配置
       Ctor.superOptions = superOptions
       // check if there are any late-modified/attached options (#4976)
       const modifiedOptions = resolveModifiedOptions(Ctor)
@@ -105,6 +117,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
       if (modifiedOptions) {
         extend(Ctor.extendOptions, modifiedOptions)
       }
+      // 归并配置
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)
       if (options.name) {
         options.components[options.name] = Ctor
@@ -113,15 +126,15 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
   }
   return options
 }
-
+// 处理调整配置
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
-  const latest = Ctor.options
-  const sealed = Ctor.sealedOptions
+  const latest = Ctor.options // 最新版本
+  const sealed = Ctor.sealedOptions  // 确认版本
   for (const key in latest) {
     if (latest[key] !== sealed[key]) {
       if (!modified) modified = {}
-      modified[key] = latest[key]
+      modified[key] = latest[key] // 处理差异
     }
   }
   return modified

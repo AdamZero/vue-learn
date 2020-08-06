@@ -33,20 +33,23 @@ export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
+  // 递归拿到第一个非抽象的父组件
   let parent = options.parent
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
+    // 父组件关联子组件
     parent.$children.push(vm)
   }
 
   vm.$parent = parent
+  // 组件根节点设置到父类/自己
   vm.$root = parent ? parent.$root : vm
-
+  // 初始化子组件和refs值
   vm.$children = []
   vm.$refs = {}
-
+  // 初始化一些标识数据
   vm._watcher = null
   vm._inactive = null
   vm._directInactive = false
