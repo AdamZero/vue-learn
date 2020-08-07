@@ -62,6 +62,7 @@ export function initState (vm: Component) {
 }
 
 function initProps (vm: Component, propsOptions: Object) {
+  // 初始化数据
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
@@ -69,7 +70,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent
   // root instance props should be converted
-  if (!isRoot) {
+  if (!isRoot) { // 根节点不需要初始化props
     toggleObserving(false)
   }
   for (const key in propsOptions) {

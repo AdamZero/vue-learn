@@ -23,6 +23,7 @@ let uid = 0
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
  */
+// 表达式解析,依赖收集,触发视图更新,用于watch和指令
 export default class Watcher {
   vm: Component;
   expression: string;
@@ -97,9 +98,10 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 在watcher update后得run函数中执行
    */
   get () {
-    pushTarget(this)
+    pushTarget(this) // 放入Dep
     let value
     const vm = this.vm
     try {
@@ -116,7 +118,7 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
-      popTarget()
+      popTarget() // 移除这个watcher,堆栈回退上个watcher
       this.cleanupDeps()
     }
     return value
@@ -147,6 +149,7 @@ export default class Watcher {
         dep.removeSub(this)
       }
     }
+    // 把newDep和newDepIds换到dep和depIds
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
@@ -230,6 +233,7 @@ export default class Watcher {
       // remove self from vm's watcher list
       // this is a somewhat expensive operation so we skip it
       // if the vm is being destroyed.
+      // 在vm实例销毁时清空侦听
       if (!this.vm._isBeingDestroyed) {
         remove(this.vm._watchers, this)
       }

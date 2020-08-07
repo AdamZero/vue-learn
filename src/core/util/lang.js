@@ -31,6 +31,7 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
  * Parse simple path.
  */
 const bailRE = new RegExp(`[^${unicodeRegExp.source}.$_\\d]`)
+// 完全搞不懂???
 export function parsePath (path: string): any {
   if (bailRE.test(path)) {
     return

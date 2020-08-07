@@ -54,11 +54,11 @@ export function initMixin (Vue: Class<Component>) {
     // expose real self
     vm._self = vm
     initLifecycle(vm) // 说是初始化生命周期，其实是初始化了一些内部变量
-    initEvents(vm) // 
-    initRender(vm)
-    callHook(vm, 'beforeCreate')
+    initEvents(vm) // 添加事件监听
+    initRender(vm) // 绑定创建vdom得方法,对$attrs和$listeners做侦听处理
+    callHook(vm, 'beforeCreate') // 触发生命周期
     initInjections(vm) // resolve injections before data/props
-    initState(vm)
+    initState(vm) // 这里把state相关(data,method,props)初始化,所以之后可以在其内部使用this操作data
     initProvide(vm) // resolve provide after data/props
     callHook(vm, 'created')
 
