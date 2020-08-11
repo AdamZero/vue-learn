@@ -199,32 +199,33 @@ export function defineReactive (
  * already exist.
  */
 export function set (target: Array<any> | Object, key: any, val: any): any {
-  if (process.env.NODE_ENV !== 'production' &&
-    (isUndef(target) || isPrimitive(target))
-  ) {
-    warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
-  }
-  if (Array.isArray(target) && isValidArrayIndex(key)) {
+  // if (process.env.NODE_ENV !== 'production' &&
+  //   (isUndef(target) || isPrimitive(target))
+  // ) {
+  //   warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
+  // }
+  if (Array.isArray(target) && isValidArrayIndex(key)) { // 往数组里写入不用手动绑定，因为splice方法已被重写
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     return val
   }
-  if (key in target && !(key in Object.prototype)) {
+  if (key in target && !(key in Object.prototype)) { // 是已经监听的属性，变更会自动更新
     target[key] = val
     return val
   }
-  const ob = (target: any).__ob__
-  if (target._isVue || (ob && ob.vmCount)) {
+  const ob = target.__ob__
+  if (target._isVue || (ob && ob.vmCount)) {// 不支持给vue或$data设置属性
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
       'at runtime - declare it upfront in the data option.'
     )
     return val
   }
-  if (!ob) {
+  if (!ob) { // 原来就没监听，直接赋值返回
     target[key] = val
     return val
   }
+  // 原来监听了，把新的属性值加上，添加监听并通知更新
   defineReactive(ob.value, key, val)
   ob.dep.notify()
   return val
@@ -234,11 +235,11 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
  * Delete a property and trigger change if necessary.
  */
 export function del (target: Array<any> | Object, key: any) {
-  if (process.env.NODE_ENV !== 'production' &&
-    (isUndef(target) || isPrimitive(target))
-  ) {
-    warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
-  }
+  // if (process.env.NODE_ENV !== 'production' &&
+  //   (isUndef(target) || isPrimitive(target))
+  // ) {
+  //   warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
+  // }
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1)
     return

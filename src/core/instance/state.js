@@ -48,7 +48,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
-  if (opts.props) initProps(vm, opts.props)
+  if (opts.props) initProps(vm, opts.props) //props是prop的配置,propsData是props中传递的值
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
     initData(vm)
@@ -73,9 +73,9 @@ function initProps (vm: Component, propsOptions: Object) {
   if (!isRoot) { // 根节点不需要初始化props
     toggleObserving(false)
   }
-  for (const key in propsOptions) {
+  for (const key in propsOptions) { // 循环所有prop属性
     keys.push(key)
-    const value = validateProp(key, propsOptions, propsData, vm)
+    const value = validateProp(key, propsOptions, propsData, vm) // 取值并对内部属性增加侦听
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
@@ -98,12 +98,12 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
-      defineReactive(props, key, value)
+      defineReactive(props, key, value) // 对此属性添加侦听，不同于上面的Observer的地方在于一个是本身，一个是子属性
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
-    if (!(key in vm)) {
+    if (!(key in vm)) { // 没挂在vm上的属性从vm._props里取
       proxy(vm, `_props`, key)
     }
   }
@@ -149,7 +149,7 @@ function initData (vm: Component) {
     }
   }
   // observe data
-  observe(data, true /* asRootData */)
+  observe(data, true /* asRootData */) // data是根节点
 }
 
 export function getData (data: Function, vm: Component): any {
@@ -217,7 +217,7 @@ export function defineComputed (
   if (typeof userDef === 'function') {
     // conputed方法计算
     sharedPropertyDefinition.get = shouldCache
-    // 根据是否有缓存进行创建get操作/执行操作
+    // 根据是否有缓存进行创建get操作/执行操作 
       ? createComputedGetter(key)
       : createGetterInvoker(userDef)
     sharedPropertyDefinition.set = noop
@@ -306,9 +306,9 @@ function initWatch (vm: Component, watch: Object) {
 }
 
 function createWatcher (
-  vm: Component,
-  expOrFn: string | Function,
-  handler: any,
+  vm: Component,// 实例
+  expOrFn: string | Function, // watch的属性
+  handler: any, // 变更回调
   options?: Object
 ) {
   if (isPlainObject(handler)) {
@@ -318,7 +318,7 @@ function createWatcher (
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
-  return vm.$watch(expOrFn, handler, options)
+  return vm.$watch(expOrFn, handler, options) // stateMixin中定义的$watch方法
 }
 
 export function stateMixin (Vue: Class<Component>) {
@@ -341,6 +341,7 @@ export function stateMixin (Vue: Class<Component>) {
       warn(`$props is readonly.`, this)
     }
   }
+  // 访问$data和$props时指向_data/_props
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 

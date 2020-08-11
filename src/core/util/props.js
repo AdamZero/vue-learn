@@ -17,38 +17,38 @@ type PropOptions = {
   required: ?boolean,
   validator: ?Function
 };
-
+// 校验prop
 export function validateProp (
   key: string,
   propOptions: Object,
   propsData: Object,
   vm?: Component
 ): any {
-  const prop = propOptions[key]
-  const absent = !hasOwn(propsData, key)
-  let value = propsData[key]
+  const prop = propOptions[key] // prop配置
+  const absent = !hasOwn(propsData, key) // 传递值有没有这个属性
+  let value = propsData[key] // 值
   // boolean casting
-  const booleanIndex = getTypeIndex(Boolean, prop.type)
-  if (booleanIndex > -1) {
-    if (absent && !hasOwn(prop, 'default')) {
+  const booleanIndex = getTypeIndex(Boolean, prop.type) // 是否接收Boolean
+  if (booleanIndex > -1) { // 接收Boolean
+    if (absent && !hasOwn(prop, 'default')) { // 没传值且无默认值
       value = false
-    } else if (value === '' || value === hyphenate(key)) {
+    } else if (value === '' || value === hyphenate(key)) { // '',-连接名称
       // only cast empty string / same name to boolean if
       // boolean has higher priority
-      const stringIndex = getTypeIndex(String, prop.type)
-      if (stringIndex < 0 || booleanIndex < stringIndex) {
+      const stringIndex = getTypeIndex(String, prop.type) // 是否接收String
+      if (stringIndex < 0 || booleanIndex < stringIndex) { // 不接收String/优先接收Boolean
         value = true
       }
     }
   }
   // check default value
   if (value === undefined) {
-    value = getPropDefaultValue(vm, prop, key)
+    value = getPropDefaultValue(vm, prop, key) // 默认值
     // since the default value is a fresh copy,
     // make sure to observe it.
     const prevShouldObserve = shouldObserve
     toggleObserving(true)
-    observe(value)
+    observe(value) // 观察对象
     toggleObserving(prevShouldObserve)
   }
   if (
@@ -89,6 +89,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // call factory function for non-Function types
   // a value is Function if its prototype is function even across different execution context
+  // Object要用方法生成
   return typeof def === 'function' && getType(prop.type) !== 'Function'
     ? def.call(vm)
     : def
